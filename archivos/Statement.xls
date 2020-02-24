@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <title>Statement: 8506008 - MPD_OANDA_MT4</title>
+    <meta name="generator" content="MetaQuotes Software Corp.">
+    <link rel="help" href="https://www.metaquotes.net">
+    <style type="text/css" media="screen">
+    <!--
+    td { font: 8pt Tahoma,Arial; }
+    //-->
+    </style>
+    <style type="text/css" media="print">
+    <!--
+    td { font: 7pt Tahoma,Arial; }
+    //-->
+    </style>
+    <style type="text/css">
+    <!--
+    .msdate { mso-number-format:"General Date"; }
+    .mspt   { mso-number-format:\#\,\#\#0\.00;  }
+    //-->
+    </style>
+  </head>
+<body topmargin=1 marginheight=1>
+<div align=center>
+<div style="font: 20pt Times New Roman"><b>OANDA Corporation</b></div><br>
+
+
+<table cellspacing=1 cellpadding=3 border=0>
+<tr align=left>
+    <td colspan=2><b>Account: 8506008</b></td>
+    <td colspan=5><b>Name: MPD_OANDA_MT4</b></td>
+    <td colspan=2><b>Currency: USD</b></td>
+    <td colspan=2><b>Leverage: 1:100</b></td>
+    <td colspan=3 align=right><b>2020 February 24, 08:54</b></td></tr>
+
+<tr align=left><td colspan=14><b>Closed Transactions:</b></td></tr>
+<tr align=center bgcolor="#C0C0C0">
+   <td>Ticket</td><td nowrap>Open Time</td><td>Type</td><td>Size</td><td>Item</td>
+   <td>Price</td><td>S / L</td><td>T / P</td><td nowrap>Close Time</td>
+   <td>Price</td><td>Commission</td><td>Taxes</td><td>Swap</td><td>Profit</td></tr>
+<tr align=right><td title="ADJUSTMENT">233086803</td><td class=msdate nowrap>2020.02.10 16:49:56</td><td>balance</td><td colspan=10 align=left>ADJUSTMENT</td><td class=mspt>5 000.00</td></tr>
+<tr bgcolor=#E0E0E0 align=right><td>233137771</td><td nowrap>2020.02.11 02:11:36</td><td>buy</td><td class=mspt>0.05</td><td>usdchf</td><td style="mso-number-format:0\.00000;">0.97767</td><td style="mso-number-format:0\.00000;">0.10000</td><td style="mso-number-format:0\.00000;">1.00000</td><td class=msdate nowrap>2020.02.13 15:19:34</td><td style="mso-number-format:0\.00000;">0.97833</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>3.37</td></tr>
+<tr align=right><td title="Financing">233247008</td><td class=msdate nowrap>2020.02.12 00:01:04</td><td>balance</td><td colspan=10 align=left>Financing</td><td class=mspt>0.20</td></tr>
+<tr bgcolor=#E0E0E0 align=right><td>233265363</td><td nowrap>2020.02.12 06:10:26</td><td>sell</td><td class=mspt>0.05</td><td>usdmxn</td><td style="mso-number-format:0\.00000;">18.64110</td><td style="mso-number-format:0\.00000;">18.66900</td><td style="mso-number-format:0\.00000;">18.60000</td><td class=msdate nowrap>2020.02.13 07:28:51</td><td style="mso-number-format:0\.00000;">18.66906</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>-7.49</td></tr>
+<tr align=right><td>233291173</td><td nowrap>2020.02.12 15:11:02</td><td>buy</td><td class=mspt>0.50</td><td>gbpusd</td><td style="mso-number-format:0\.00000;">1.29885</td><td style="mso-number-format:0\.00000;">1.29673</td><td style="mso-number-format:0\.00000;">1.30275</td><td class=msdate nowrap>2020.02.12 15:53:28</td><td style="mso-number-format:0\.00000;">1.29673</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>-106.00</td></tr>
+<tr bgcolor=#E0E0E0 align=right><td>233291634</td><td nowrap>2020.02.12 15:20:19</td><td>sell</td><td class=mspt>0.50</td><td>usdcad</td><td style="mso-number-format:0\.00000;">1.32596</td><td style="mso-number-format:0\.00000;">1.34183</td><td style="mso-number-format:0\.00000;">1.30112</td><td class=msdate nowrap>2020.02.12 21:26:43</td><td style="mso-number-format:0\.00000;">1.32528</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>25.65</td></tr>
+<tr align=right><td>233292144</td><td nowrap>2020.02.12 15:32:26</td><td>sell</td><td class=mspt>0.50</td><td>usdmxn</td><td style="mso-number-format:0\.00000;">18.61782</td><td style="mso-number-format:0\.00000;">18.66846</td><td style="mso-number-format:0\.00000;">18.59920</td><td class=msdate nowrap>2020.02.13 07:28:00</td><td style="mso-number-format:0\.00000;">18.66853</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>-135.86</td></tr>
+<tr bgcolor=#E0E0E0 align=right><td title="Financing">233346627</td><td class=msdate nowrap>2020.02.13 00:00:48</td><td>balance</td><td colspan=10 align=left>Financing</td><td class=mspt>27.21</td></tr>
+<tr align=right><td>233357144</td><td nowrap>2020.02.13 02:19:14</td><td>buy</td><td class=mspt>0.50</td><td>usdchf</td><td style="mso-number-format:0\.00000;">0.97814</td><td style="mso-number-format:0\.00000;">0.96700</td><td style="mso-number-format:0\.00000;">1.00000</td><td class=msdate nowrap>2020.02.13 15:19:36</td><td style="mso-number-format:0\.00000;">0.97833</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>9.71</td></tr>
+<tr bgcolor=#E0E0E0 align=right><td>233404642</td><td nowrap>2020.02.13 15:32:57</td><td>buy</td><td class=mspt>1.50</td><td>usdcad</td><td style="mso-number-format:0\.00000;">1.32532</td><td style="mso-number-format:0\.00000;">1.32432</td><td style="mso-number-format:0\.00000;">1.32732</td><td class=msdate nowrap>2020.02.13 16:18:30</td><td style="mso-number-format:0\.00000;">1.32430</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>-115.53</td></tr>
+<tr align=right><td>233404776</td><td nowrap>2020.02.13 15:36:34</td><td>buy</td><td class=mspt>0.75</td><td>usdjpy</td><td style="mso-number-format:0\.000;">109.758</td><td style="mso-number-format:0\.000;">109.636</td><td style="mso-number-format:0\.000;">110.006</td><td class=msdate nowrap>2020.02.13 22:48:42</td><td style="mso-number-format:0\.000;">109.775</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>11.61</td></tr>
+<tr bgcolor=#E0E0E0 align=right><td>233408173</td><td nowrap>2020.02.13 16:26:06</td><td>buy</td><td class=mspt>1.00</td><td>eurjpy</td><td style="mso-number-format:0\.000;">119.166</td><td style="mso-number-format:0\.000;">119.016</td><td style="mso-number-format:0\.000;">119.466</td><td class=msdate nowrap>2020.02.13 17:05:05</td><td style="mso-number-format:0\.000;">119.013</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>-139.54</td></tr>
+<tr align=right><td>233538055</td><td nowrap>2020.02.17 04:25:32</td><td>buy</td><td class=mspt>0.30</td><td>usdmxn</td><td style="mso-number-format:0\.00000;">18.54095</td><td style="mso-number-format:0\.00000;">18.52545</td><td style="mso-number-format:0\.00000;">18.57595</td><td class=msdate nowrap>2020.02.17 07:15:51</td><td style="mso-number-format:0\.00000;">18.52537</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>-25.23</td></tr>
+<tr bgcolor=#E0E0E0 align=right><td>233559202</td><td nowrap>2020.02.17 15:38:49</td><td>sell</td><td class=mspt>0.25</td><td>usdmxn</td><td style="mso-number-format:0\.00000;">18.56711</td><td style="mso-number-format:0\.00000;">18.57211</td><td style="mso-number-format:0\.00000;">18.55711</td><td class=msdate nowrap>2020.02.17 15:40:49</td><td style="mso-number-format:0\.00000;">18.57212</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>-6.75</td></tr>
+<tr align=right><td>233609713</td><td nowrap>2020.02.18 01:34:49</td><td>buy</td><td class=mspt>1.00</td><td>eurgbp</td><td style="mso-number-format:0\.00000;">0.83340</td><td style="mso-number-format:0\.00000;">0.83090</td><td style="mso-number-format:0\.00000;">0.84340</td><td class=msdate nowrap>2020.02.18 12:26:53</td><td style="mso-number-format:0\.00000;">0.83089</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>-327.04</td></tr>
+<tr bgcolor=#E0E0E0 align=right><td>233702879</td><td nowrap>2020.02.19 06:01:57</td><td>buy</td><td class=mspt>0.01</td><td>usdjpy</td><td style="mso-number-format:0\.000;">110.068</td><td style="mso-number-format:0\.000;">110.051</td><td style="mso-number-format:0\.000;">110.084</td><td class=msdate nowrap>2020.02.19 06:01:58</td><td style="mso-number-format:0\.000;">110.051</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>-0.16</td></tr>
+<tr align=right><td>233782117</td><td nowrap>2020.02.20 02:01:08</td><td>buy</td><td class=mspt>0.01</td><td>eurusd</td><td style="mso-number-format:0\.00000;">1.08104</td><td style="mso-number-format:0\.00000;">0.00000</td><td style="mso-number-format:0\.00000;">0.00000</td><td class=msdate nowrap>2020.02.20 15:14:32</td><td style="mso-number-format:0\.00000;">1.07887</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>-2.17</td></tr>
+<tr bgcolor=#E0E0E0 align=right><td>233782126</td><td nowrap>2020.02.20 02:01:20</td><td>buy</td><td class=mspt>1.00</td><td>eurusd</td><td style="mso-number-format:0\.00000;">1.08108</td><td style="mso-number-format:0\.00000;">0.00000</td><td style="mso-number-format:0\.00000;">0.00000</td><td class=msdate nowrap>2020.02.20 15:14:36</td><td style="mso-number-format:0\.00000;">1.07888</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>-220.00</td></tr>
+<tr align=right><td title="Financing">233864194</td><td class=msdate nowrap>2020.02.21 00:00:57</td><td>balance</td><td colspan=10 align=left>Financing</td><td class=mspt>0.13</td></tr>
+<tr bgcolor=#E0E0E0 align=right><td title="Financing">233947548</td><td class=msdate nowrap>2020.02.22 00:00:50</td><td>balance</td><td colspan=10 align=left>Financing</td><td class=mspt>0.12</td></tr>
+
+
+<tr align=right>
+    <td colspan=10>&nbsp;</td>
+    <td class=mspt>0.00</td>
+    <td class=mspt>0.00</td>
+    <td class=mspt>0.00</td>
+    <td class=mspt>-1 035.43</td>
+</tr>
+
+<tr align=right>
+    <td colspan=12 align=right><b>Closed P/L:</b></td>
+    <td colspan=2 align=right title="Commission + Swap + Profit + Taxes" class=mspt><b>-1 035.43</b></td>
+</tr>
+
+<tr align=left><td colspan=14><b>Open Trades:</b></td></tr>
+<tr align=center bgcolor="#C0C0C0">
+    <td>Ticket</td><td nowrap>Open Time</td><td>Type</td><td>Size</td><td>Item</td>
+    <td>Price</td><td>S / L</td><td>T / P</td><td>&nbsp;</td>
+    <td>Price</td><td>Commission</td><td>Taxes</td><td>Swap</td><td>Profit</td></tr>
+<tr align=right><td>233814909</td><td nowrap>2020.02.20 15:33:08</td><td>sell</td><td class=mspt>0.03</td><td>eurusd</td><td style="mso-number-format:0\.00000;">1.07917</td><td style="mso-number-format:0\.00000;">1.09176</td><td style="mso-number-format:0\.00000;">1.05926</td><td class=msdate nowrap>&nbsp;</td><td style="mso-number-format:0\.00000;">1.08530</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>0.00</td><td class=mspt>-18.39</td></tr>
+
+
+<tr align=right>
+    <td colspan=10>&nbsp;</td>
+    <td class=mspt>0.00</td>
+    <td class=mspt>0.00</td>
+    <td class=mspt>0.00</td>
+    <td class=mspt>-18.39</td>
+</tr>
+
+<tr><td colspan=10>&nbsp;</td><td colspan=2 align=right><b>Floating P/L:</b></td>
+    <td colspan=2 align=right title="Commission + Swap + Profit + Taxes" class=mspt><b>-18.39</b></td></tr>
+
+<tr align=left><td colspan=14><b>Working Orders:</b></td></tr>
+<tr align=center bgcolor="#C0C0C0">
+    <td>Ticket</td><td nowrap>Open Time</td><td>Type</td><td>Size</td><td>Item</td>
+    <td>Price</td><td>S / L</td><td>T / P</td><td colspan=2 nowrap>Market Price</td><td colspan=4>&nbsp;</td></tr>
+<tr align=right><td colspan=13 align=center>No transactions</td></tr>
+
+
+<tr><td colspan=14 style="font: 1pt arial">&nbsp;</td></tr>
+
+<tr align=left><td colspan=14><b>Summary:</b></td></tr>
+<tr align=right>
+    <td colspan=2><b>Deposit/Withdrawal:</b></td>
+    <td colspan=2 class=mspt><b>5 027.66</b></td>
+    <td colspan=4><b>Credit Facility:</b></td>
+    <td class=mspt><b>0.00</b></td>
+    <td colspan=5>&nbsp;</td></tr>
+    
+<tr align=right>
+    <td colspan=2><b>Closed Trade P/L:</b></td>
+    <td colspan=2 class=mspt><b>-1 035.43</b></td>
+    <td colspan=4><b>Floating P/L:</b></td>
+    <td class=mspt><b>-18.39</b></td>
+    <td colspan=3><b>Margin:</b></td>
+    <td colspan=2 class=mspt><b>32.38</b></td></tr>
+
+<tr align=right>
+    <td colspan=2><b>Balance:</b></td>
+    <td colspan=2 class=mspt><b>3 992.23</b></td>
+    <td colspan=4><b>Equity:</b></td>
+    <td class=mspt><b>3 973.84</b></td>
+    <td colspan=3><b>Free Margin:</b></td>
+    <td colspan=2 class=mspt><b>3 941.46</b></td></tr>
+	
+</table>
+</div></body></html>
