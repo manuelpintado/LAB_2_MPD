@@ -204,7 +204,7 @@ def f_pip_size(param_ins):
     # inst = param_ins.replace('_', '')
 
     # transformar a minusculas
-    inst = param_ins.lower()
+    # inst = param_ins.lower()
 
     # lista de pips por instrumento
     pips_inst = {'eurusd': 10000,
