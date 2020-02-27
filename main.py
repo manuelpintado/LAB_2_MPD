@@ -5,3 +5,6 @@
 # -- repositorio: https://github.com/manuelpintado/LAB_2_MPD.git
 # -- ------------------------------------------------------------------------------------ -- #
 
+import funciones as fn
+
+datos = fn.f_leer_archivo(param_archivo='archivo_tradeview_1.xlsx')
