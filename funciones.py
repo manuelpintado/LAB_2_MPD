@@ -6,12 +6,11 @@
 # -- ------------------------------------------------------------------------------------ -- #
 
 # import numpy as np                                      # funciones numericas
-import pandas as pd  # dataframes y utilidades
 from datetime import timedelta  # diferencia entre datos tipo tiempo
-from oandapyV20 import API  # conexion con broker OANDA
 import oandapyV20.endpoints.instruments as instruments  # informacion de precios historicos
-import visualizaciones as vs
 import pandas as pd
+from oandapyV20 import API  # conexion con broker OANDA
+
 
 # -- --------------------------------------------------------- FUNCION: Descargar precios -- #
 # -- Descargar precios historicos con OANDA
@@ -168,6 +167,15 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
 # -- --------------------------------------------------------- FUNCION: Leer archivo excel -- #
 
 def f_leer_archivo(param_archivo):
+    """
+
+    :param param_archivo: Cadena de texto con el nombre del archivo
+    :return: dataframe de datos importados de archovo excel
+
+    Debugging
+    ---------
+    param_archivo = 'archivo_tradeview_1.xlsx'
+    """
     df_data = pd.read_excel('archivos/' + param_archivo, sheet_name='Hoja1')
 
     # Convertir en minusculas los titulos de las columnas
@@ -179,3 +187,63 @@ def f_leer_archivo(param_archivo):
     df_data[numcols] = df_data[numcols].apply(pd.to_numeric)
 
     return df_data
+
+
+def f_pip_size(param_ins):
+    """
+
+    :param param_ins: instrumento que se busca
+    :return: pips y nombre de instrumento
+
+    Dwbugging
+    ---
+    param_inst = 'usdmxn'
+    """
+
+    # encontrar y eliminar _
+    # inst = param_ins.replace('_', '')
+
+    # transformar a minusculas
+    inst = param_ins.lower()
+
+    # lista de pips por instrumento
+    pips_inst = {'eurusd': 10000,
+                 'usdjpy': 10000,
+                 'eurjpy': 100,
+                 'audusd': 10000,
+                 'gbpusd': 10000,
+                 'usdchf': 10000,
+                 'audjpy': 100,
+                 'euraud': 10000,
+                 'eurgbp': 10000,
+                 'gbpjpy': 100,
+                 'usdcad': 10000,
+                 'audcad': 10000,
+                 'eurcad': 10000,
+                 'gbpaud': 10000,
+                 'usdhkd': 10000,
+                 'gbphkd': 10000,
+                 'cadhkd': 10000,
+                 'usdmxn': 10000}
+    return pips_inst[inst]
+
+
+def f_columnas_datos(param_data):
+    """
+
+    :param param_data: dataframe conteniendo por lo menos las columnas 'closetime' y 'opentime'
+    :return: dataframe ingresado mas columna 'time' que es diferencia entre close y open
+
+    Debugging
+    --------
+    param_data = datos
+    """
+    # convertit columna de 'closetime' y 'opentime' utilizando ps.to_datetime
+    param_data['closetime'] = pd.to_datetime(param_data['closetime'])
+    param_data['opentime'] = pd.to_datetime(param_data['opentime'])
+
+    # tiempo transcurrido de una operacion
+    param_data['tiempo'] = [(param_data.loc[i, 'closetime'] - param_data.loc[i, 'opentime']).delta / 1e9
+                            for i in range(0, len(param_data['closetime']))]
+
+    return param_data
