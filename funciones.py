@@ -176,7 +176,15 @@ def f_leer_archivo(param_archivo):
     ---------
     param_archivo = 'archivo_tradeview_1.xlsx'
     """
-    df_data = pd.read_excel('archivos/' + param_archivo, sheet_name='Hoja1')
+
+    # Leer archivo
+    df_data = pd.read_excel('archivos/' + param_archivo, sheet_name='Sheet1')
+
+    # Elegir renglones type == buy | type == sell
+    df_data = df_data[df_data.type != 'balance']
+
+    # Resetear indice
+    df_data = df_data.reset_index()
 
     # Convertir en minusculas los titulos de las columnas
     df_data.columns = [list(df_data.columns)[i].lower()
@@ -193,7 +201,7 @@ def f_pip_size(param_ins):
     """
 
     :param param_ins: instrumento que se busca
-    :return: pips y nombre de instrumento
+    :return: pips de instrumento
 
     Dwbugging
     ---
@@ -204,11 +212,11 @@ def f_pip_size(param_ins):
     # inst = param_ins.replace('_', '')
 
     # transformar a minusculas
-    # inst = param_ins.lower()
+    param_ins = param_ins.lower()
 
     # lista de pips por instrumento
     pips_inst = {'eurusd': 10000,
-                 'usdjpy': 10000,
+                 'usdjpy': 100,
                  'eurjpy': 100,
                  'audusd': 10000,
                  'gbpusd': 10000,
@@ -225,7 +233,7 @@ def f_pip_size(param_ins):
                  'gbphkd': 10000,
                  'cadhkd': 10000,
                  'usdmxn': 10000}
-    return pips_inst[inst]
+    return pips_inst[param_ins]
 
 
 def f_columnas_datos(param_data):
@@ -238,12 +246,12 @@ def f_columnas_datos(param_data):
     --------
     param_data = datos
     """
-    # convertit columna de 'closetime' y 'opentime' utilizando ps.to_datetime
+    # convertit columna de 'closetime' y 'opentime' utilizando pd.to_datetime
     param_data['closetime'] = pd.to_datetime(param_data['closetime'])
     param_data['opentime'] = pd.to_datetime(param_data['opentime'])
 
     # tiempo transcurrido de una operacion
     param_data['tiempo'] = [(param_data.loc[i, 'closetime'] - param_data.loc[i, 'opentime']).delta / 1e9
-                            for i in range(0, len(param_data['closetime']))]
+                            for i in param_data.index]
 
     return param_data

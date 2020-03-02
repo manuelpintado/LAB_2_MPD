@@ -7,6 +7,8 @@
 
 import funciones as fn
 
-datos = fn.f_leer_archivo(param_archivo='archivo_tradeview_1.xlsx')
-fn.f_pip_size(param_ins='usdjpy')
+datos = fn.f_leer_archivo(param_archivo='reporte_cuenta.xlsx')
+
+pip_size = fn.f_pip_size(param_ins='usdmxn')
+
 datos = fn.f_columnas_datos(param_data=datos)
