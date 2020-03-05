@@ -5,10 +5,10 @@
 # -- repositorio: https://github.com/manuelpintado/LAB_2_MPD.git
 # -- ------------------------------------------------------------------------------------ -- #
 
-# import numpy as np                                      # funciones numericas
+# import numpy as np                                    # funciones numericas
 from datetime import timedelta  # diferencia entre datos tipo tiempo
 import oandapyV20.endpoints.instruments as instruments  # informacion de precios historicos
-import pandas as pd
+import pandas as pd  # manejo de datos
 from oandapyV20 import API  # conexion con broker OANDA
 
 
@@ -17,6 +17,8 @@ from oandapyV20 import API  # conexion con broker OANDA
 
 def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
     """
+    Funcion para descargar precios historicos masivos de OANDA
+
     Parameters
     ----------
     p0_fini
@@ -168,9 +170,10 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
 
 def f_leer_archivo(param_archivo):
     """
+    Funcion para leer archivo en formato xlsx.
 
     :param param_archivo: Cadena de texto con el nombre del archivo
-    :return: dataframe de datos importados de archovo excel
+    :return: dataframe de datos importados de archivo excel
 
     Debugging
     ---------
@@ -197,8 +200,11 @@ def f_leer_archivo(param_archivo):
     return df_data
 
 
+# -- -------------------------------- FUNCION: Diccionario de instrumentos y tamaño del pip -- #
+
 def f_pip_size(param_ins):
     """
+    Diccionario conteniendo el tamaño del multiplicador del pip para los diferentes pares de divisas.
 
     :param param_ins: instrumento que se busca
     :return: pips de instrumento
@@ -236,8 +242,12 @@ def f_pip_size(param_ins):
     return pips_inst[param_ins]
 
 
-def f_columnas_datos(param_data):
+# -- ---------------------------------- FUNCION: Calcular el tiempo de una posición abierta -- #
+
+
+def f_columnas_tiempos(param_data):
     """
+    Funcion para encontrar el tiempo entre la apertura y cierre de una operacion en segundos.
 
     :param param_data: dataframe conteniendo por lo menos las columnas 'closetime' y 'opentime'
     :return: dataframe ingresado mas columna 'time' que es diferencia entre close y open
@@ -246,7 +256,8 @@ def f_columnas_datos(param_data):
     --------
     param_data = datos
     """
-    # convertit columna de 'closetime' y 'opentime' utilizando pd.to_datetime
+
+    # convertir columna de 'closetime' y 'opentime' utilizando pd.to_datetime
     param_data['closetime'] = pd.to_datetime(param_data['closetime'])
     param_data['opentime'] = pd.to_datetime(param_data['opentime'])
 
@@ -255,3 +266,53 @@ def f_columnas_datos(param_data):
                             for i in param_data.index]
 
     return param_data
+
+
+# -- ------------------------------------------ FUNCION: Perdida/ganacia experesada en pips -- #
+
+
+def f_columnas_pips(param_data):
+    """
+    Funcion para calcular la perdida o ganancia expresada en pips.
+
+    :param param_data: dataframe conteniendo por lo menos el precio de apertura, cierre y symbolo de activo
+    :return: dataframe agregando columnas de diferencia de ganacia o perdida expresada en pips, pips acumulados
+    del dataframe completo y 
+    """
+
+    # calcular ganancia o perdida expresada en pips
+    param_data['pips'] = [
+        (param_data.loc[i, 'closeprice'] - param_data.loc[i, 'openprice']) * f_pip_size(param_data.loc[i, 'symbol'])
+        if param_data.loc[i, 'type'] == 'buy'
+        else (param_data.loc[i, 'openprice'] - param_data.loc[i, 'closeprice']) * f_pip_size(
+            param_data.loc[i, 'symbol'])
+        for i in param_data.index
+    ]
+
+    # calcular los pips acumulados de perdidas o ganancias
+    param_data['pips_acum'] = param_data['pips'].cumsum()
+
+
+
+    return param_data
+
+
+# -- -------------------------------------------------------- FUNCION: Estadisticas basicas -- #
+
+
+def f_estadisticas_ba(param_data):
+    pass
+
+
+# -- ---------------------------------------------------- FUNCION: Estadisticas financieras -- #
+
+
+def f_estadisticas_mad(param_data):
+    pass
+
+
+# -- ----------------------------------------------------------- FUNCION: Sesgos cognitivos -- #
+
+
+def f_sesgos_cognitivo(param_data):
+    pass
