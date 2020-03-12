@@ -7,11 +7,13 @@
 
 import funciones as fn
 
-datos = fn.f_leer_archivo(param_archivo='reporte_cuenta.xlsx')
+datos = fn.f_leer_archivo(param_archivo='archivo_tradeview_1.xlsx', sheet_name='Hoja1')
 
 pip_size = fn.f_pip_size(param_ins='usdmxn')
 
 datos = fn.f_columnas_tiempos(param_data=datos)
 
 datos = fn.f_columnas_pips(param_data=datos)
+
+estadisticos_ba = fn.f_estadisticas_ba(param_data=datos)
 

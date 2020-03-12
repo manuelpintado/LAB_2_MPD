@@ -5,11 +5,12 @@
 # -- repositorio: https://github.com/manuelpintado/LAB_2_MPD.git
 # -- ------------------------------------------------------------------------------------ -- #
 
-# import numpy as np                                    # funciones numericas
+import numpy as np  # funciones numericas
 from datetime import timedelta  # diferencia entre datos tipo tiempo
 import oandapyV20.endpoints.instruments as instruments  # informacion de precios historicos
 import pandas as pd  # manejo de datos
 from oandapyV20 import API  # conexion con broker OANDA
+from statistics import median
 
 
 # -- --------------------------------------------------------- FUNCION: Descargar precios -- #
@@ -168,11 +169,12 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
 
 # -- --------------------------------------------------------- FUNCION: Leer archivo excel -- #
 
-def f_leer_archivo(param_archivo):
+def f_leer_archivo(param_archivo, sheet_name='Sheet 1'):
     """
     Funcion para leer archivo en formato xlsx.
 
     :param param_archivo: Cadena de texto con el nombre del archivo
+    :param sheet_name: Cadena de texto con el nombre de la hoja del archivo
     :return: dataframe de datos importados de archivo excel
 
     Debugging
@@ -181,17 +183,17 @@ def f_leer_archivo(param_archivo):
     """
 
     # Leer archivo
-    df_data = pd.read_excel('archivos/' + param_archivo, sheet_name='Sheet1')
+    df_data = pd.read_excel('archivos/' + param_archivo, sheet_name=sheet_name)
+
+    # Convertir en minusculas los titulos de las columnas
+    df_data.columns = [list(df_data.columns)[i].lower()
+                       for i in range(0, len(df_data.columns))]
 
     # Elegir renglones type == buy | type == sell
     df_data = df_data[df_data.type != 'balance']
 
     # Resetear indice
     df_data = df_data.reset_index()
-
-    # Convertir en minusculas los titulos de las columnas
-    df_data.columns = [list(df_data.columns)[i].lower()
-                       for i in range(0, len(df_data.columns))]
 
     # Asegurar ciertas columnas de tipo numerico
     numcols = ['s/l', 't/p', 'commission', 'openprice', 'closeprice', 'profit', 'size', 'swap', 'taxes', 'order']
@@ -238,7 +240,9 @@ def f_pip_size(param_ins):
                  'usdhkd': 10000,
                  'gbphkd': 10000,
                  'cadhkd': 10000,
-                 'usdmxn': 10000}
+                 'usdmxn': 10000,
+                 'xauusd': 10,
+                 'btcusd': 1}
     return pips_inst[param_ins]
 
 
@@ -277,7 +281,11 @@ def f_columnas_pips(param_data):
 
     :param param_data: dataframe conteniendo por lo menos el precio de apertura, cierre y symbolo de activo
     :return: dataframe agregando columnas de diferencia de ganacia o perdida expresada en pips, pips acumulados
-    del dataframe completo y 
+    del dataframe completo y
+
+    Debugging
+    --------
+    param_data = datos
     """
 
     # calcular ganancia o perdida expresada en pips
@@ -292,7 +300,8 @@ def f_columnas_pips(param_data):
     # calcular los pips acumulados de perdidas o ganancias
     param_data['pips_acum'] = param_data['pips'].cumsum()
 
-
+    # calcular la ganancia o perdida acumulada de la cuenta
+    param_data['profit_acum'] = param_data['profit'].cumsum()
 
     return param_data
 
@@ -301,7 +310,106 @@ def f_columnas_pips(param_data):
 
 
 def f_estadisticas_ba(param_data):
-    pass
+    """
+
+    :param param_data: Dataframe conteniendo las operaciones realizadas en la cuenta
+    :return: Diccionario conteniendo 2 dataframes:
+                1. Concentrado de las estadisticas basicas de la cuenta
+                2. ranking de los activos utilizados (% de ganadas/perdidas por cada activo utilizado)
+
+    Debugging
+    --------
+    param_data = datos
+    """
+
+    # lista de medidas
+    medidas = np.array(['Ops totales',
+                        'Ganadoras',
+                        'Ganadoras_c',
+                        'Ganadoras_v',
+                        'Perdedoras',
+                        'Perdedoras_c',
+                        'Perdedoras_v',
+                        'Media (Profit)',
+                        'Media (Pips)',
+                        'r_efectividad',
+                        'r_proporcion',
+                        'r_efectividad_c',
+                        'r_efectividad_v'])
+
+    # lista de descripciones de diferentes indices de dataframe
+    descripciones = np.array(['Operaciones totales',
+                              'Operaciones ganadoras',
+                              'Operaciones ganadoras de compra',
+                              'Operaciones ganadoras de venta',
+                              'Operaciones perdedoras',
+                              'Operaciones perdedoras de compra',
+                              'Operaciones perdedoras de venta',
+                              'Mediana de profit de operaciones',
+                              'Mediana de pips de operaciones',
+                              'Operaciones Totales Vs Ganadoras Totales',
+                              'Ganadoras Totales Vs Perdedoras Totales',
+                              'Totales Vs Ganadoras Compras',
+                              'Totales Vs Ganadoras Ventas'])
+    # crear dataframe
+    df_1_tabla = pd.DataFrame(columns=['medidas', 'valor'],
+                              index=np.array([i for i in range(0, len(medidas))]))
+
+    # Llenar medidas
+    df_1_tabla['medidas'] = [medidas[i] for i in range(0, len(df_1_tabla.index))]
+
+    # Llenar descripciones
+    df_1_tabla['descripcion'] = [descripciones[i] for i in range(0, len(df_1_tabla.index))]
+
+    # llenado de informacion
+    df_1_tabla.loc[0, 'valor'] = len(param_data.index)
+    df_1_tabla.loc[1, 'valor'] = sum(1 for i in param_data.index if param_data.loc[i, 'profit'] >= 0)
+    df_1_tabla.loc[2, 'valor'] = sum(1 for i in param_data.index if param_data.loc[i, 'profit'] >= 0 and
+                                     param_data.loc[i, 'type'] == 'buy')
+    df_1_tabla.loc[3, 'valor'] = sum(1 for i in param_data.index if param_data.loc[i, 'profit'] >= 0 and
+                                     param_data.loc[i, 'type'] == 'sell')
+    df_1_tabla.loc[4, 'valor'] = sum(1 for i in param_data.index if param_data.loc[i, 'profit'] < 0)
+    df_1_tabla.loc[5, 'valor'] = sum(1 for i in param_data.index if param_data.loc[i, 'profit'] < 0 and
+                                     param_data.loc[i, 'type'] == 'buy')
+    df_1_tabla.loc[6, 'valor'] = sum(1 for i in param_data.index if param_data.loc[i, 'profit'] < 0 and
+                                     param_data.loc[i, 'type'] == 'sell')
+    df_1_tabla.loc[7, 'valor'] = np.round(median(param_data['profit']), 3)
+    df_1_tabla.loc[8, 'valor'] = np.round(median(param_data['pips']), 3)
+    df_1_tabla.loc[9, 'valor'] = np.round(df_1_tabla.loc[0, 'valor'] /
+                                          df_1_tabla.loc[1, 'valor'], 2)
+    df_1_tabla.loc[10, 'valor'] = np.round(df_1_tabla.loc[1, 'valor'] /
+                                           df_1_tabla.loc[4, 'valor'], 2)
+    df_1_tabla.loc[11, 'valor'] = np.round(df_1_tabla.loc[0, 'valor'] /
+                                           df_1_tabla.loc[2, 'valor'], 2)
+    df_1_tabla.loc[12, 'valor'] = np.round(df_1_tabla.loc[0, 'valor'] /
+                                           df_1_tabla.loc[3, 'valor'], 2)
+
+    # simbolos del dataframe
+    symbols = np.unique(param_data.symbol)
+
+    # creating ranking dataframe
+    df_1_ranking = pd.DataFrame(columns=['symbol', 'rank'],
+                                index=np.array([i for i in range(0, len(symbols))]))
+
+    # fill symbols
+    df_1_ranking['symbol'] = [symbols[i] for i in range(0, len(symbols))]
+
+    # ranking
+    i = 0
+    for symbol in symbols:
+        ganadas = sum(1 for i in param_data.index
+                      if param_data.loc[i, 'profit'] >= 0 and param_data.loc[i, 'symbol'] == symbol)
+        totales = sum(1 for i in param_data.index if param_data.loc[i, 'symbol'] == symbol)
+
+        df_1_ranking.loc[i, 'rank'] = str(np.round(ganadas / totales, 2)) + '%'
+        i += 1
+
+    # create the dictionary
+
+    final_dict = {'df_1_tabla': df_1_tabla,
+                  'df_1_ranking': df_1_ranking}
+
+    return final_dict
 
 
 # -- ---------------------------------------------------- FUNCION: Estadisticas financieras -- #
