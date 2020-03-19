@@ -11,6 +11,8 @@ import oandapyV20.endpoints.instruments as instruments  # informacion de precios
 import pandas as pd  # manejo de datos
 from oandapyV20 import API  # conexion con broker OANDA
 from statistics import median
+import yfinance as yf
+from datetime import date
 
 
 # -- --------------------------------------------------------- FUNCION: Descargar precios -- #
@@ -275,10 +277,11 @@ def f_columnas_tiempos(param_data):
 # -- ------------------------------------------ FUNCION: Perdida/ganacia experesada en pips -- #
 
 
-def f_columnas_pips(param_data):
+def f_columnas_pips(param_data, init_invest=5000):
     """
     Funcion para calcular la perdida o ganancia expresada en pips.
 
+    :param init_invest: initial investment
     :param param_data: dataframe conteniendo por lo menos el precio de apertura, cierre y symbolo de activo
     :return: dataframe agregando columnas de diferencia de ganacia o perdida expresada en pips, pips acumulados
     del dataframe completo y
@@ -302,6 +305,12 @@ def f_columnas_pips(param_data):
 
     # calcular la ganancia o perdida acumulada de la cuenta
     param_data['profit_acum'] = param_data['profit'].cumsum()
+
+    # calcular el capital acumulado por operacion
+    param_data['capital_acum'] = 0
+    param_data['capital_acum'][0] = init_invest + param_data['profit'][0]
+    for i in range(1, len(param_data.index)):
+        param_data['capital_acum'][i] = param_data['capital_acum'][i - 1] + param_data['profit'][i]
 
     return param_data
 
@@ -415,9 +424,141 @@ def f_estadisticas_ba(param_data):
 # -- ---------------------------------------------------- FUNCION: Estadisticas financieras -- #
 
 
-def f_estadisticas_mad(param_data):
-    pass
+def f_estadisticas_mad(param_data, rf=0.08):
+    # medidas de atribucion al desempeño (MAD)
+    MAD = np.array(['sharpe',
+                    'sortino_c',
+                    'sortino_v',
+                    'drawdown_capi_c',
+                    'drawdown_capi_v',
+                    'drawdown_pips_c',
+                    'drawdown_pips_v',
+                    'information_r'])
 
+    # descripciones de las MAD
+    descripciones = np.array(['Sharpe Ratio',
+                              'Sortino Ratio para Posiciones  de Compra',
+                              'Sortino Ratio para Posiciones de Venta',
+                              'DrawDown de Capital',
+                              'DrawUp de Capital',
+                              '	DrawDown de Pips',
+                              '	DrawUp de Pips',
+                              'Informatio Ratio'])
+
+    # creacion de dataframe de MAD
+    df_MAD = pd.DataFrame(columns=['metrica', 'valor', 'descripcion'],
+                          index=np.array([i for i in range(0, len(MAD))]))
+
+    # Llenar medidas
+    df_MAD['metrica'] = [MAD[i] for i in range(0, len(df_MAD.index))]
+
+    # Llenar descripciones
+    df_MAD['descripcion'] = [descripciones[i] for i in range(0, len(df_MAD.index))]
+
+    # calculo de las diferentes MAD
+
+    # sharp ratio
+    returns = np.log(param_data.capital_acum / param_data.capital_acum.shift()).dropna()
+    port_log_ret = np.sum(returns)
+    port_std = returns.std()
+    df_MAD.valor[0] = (port_log_ret - rf) / port_std
+
+    # sortino_c
+    port_std_neg = pd.DataFrame(np.array([ret for ret in returns if ret < 0])).std()
+    df_MAD.valor[1] = (port_log_ret - rf) / port_std_neg
+
+    # sortino_v
+    port_std_pos = pd.DataFrame(np.array([ret for ret in returns if ret > 0])).std()
+    df_MAD.valor[2] = (port_log_ret - rf) / port_std_pos
+
+    # drawdown_capi_c
+    df_MAD.valor[3] = param_data.capital_acum.min()
+
+    # drawdown_capi_v
+    df_MAD.valor[4] = param_data.capital_acum.max()
+
+    # drawdown_pips_c
+    df_MAD.valor[5] = param_data.pips_acum.min()
+
+    # drawdown_pips_v
+    df_MAD.valor[6] = param_data.pips_acum.max()
+
+    # information_r
+    benchmark_ret = benchmark_data(param_data=param_data)
+    tracking_err = returns - benchmark_ret
+    df_MAD.valor[7] = (port_log_ret - np.sum(benchmark_ret)) / tracking_err.std()
+
+    return df_MAD
+
+
+def benchmark_data(param_data, benchmark='^GSPC'):
+    """
+
+    :param param_data: dataframe that includes open time and close time of operations
+    :param benchmark: index that is considered the benckmark for portfolio
+    :return: dataframe containing benckmarks returns
+
+    Debugging
+    --------
+    param_data = datos
+    """
+    def f_datetime_range_fx(p0_start, p1_end, p2_inc, p3_delta):
+        """
+        Parameters
+        ----------
+        p0_start
+        p1_end
+        p2_inc
+        p3_delta
+        Returns
+        -------
+        ls_resultado
+        Debugging
+        ---------
+        """
+
+        ls_result = []
+        nxt = p0_start
+
+        while nxt <= p1_end:
+            ls_result.append(nxt)
+            if p3_delta == 'minutes':
+                nxt += timedelta(minutes=p2_inc)
+            elif p3_delta == 'hours':
+                nxt += timedelta(hours=p2_inc)
+            elif p3_delta == 'days':
+                nxt += timedelta(days=p2_inc)
+
+        return ls_result
+
+    start = param_data.loc[0, 'opentime']
+    start = date.strftime(start, '%Y-%m-%d')
+    end = param_data.loc[param_data.index[-1], 'closetime']
+    end = date.strftime(end, '%Y-%m-%d')
+
+    if end - start <= 7:
+        df = yf.download(tickers=benchmark, start=start, end=end, interval='1m')
+        benchmark_ret = np.log(df['Adj Close'] / df['Adj Close'].shift()).dropna()
+     else:
+        # hacer series de fechas e iteraciones para pedir todos los precios
+        fechas = f_datetime_range_fx(p0_start=start, p1_end=end, p2_inc=7, p3_delta='days')
+
+        # Lista para ir guardando los data frames
+        lista_df = list()
+
+        for fecha in range(0, len(fechas)-1):
+            # rango de fechas a uilizar
+            f_ini = fechas[fecha]
+            f_ini = date.strftime(f_ini, '%Y-%m-%d')
+            f_fin = fechas[fecha+1]
+            f_fin = date.strftime(f_fin, '%Y-%m-%d')
+            temp = yf.download(tickers=benchmark, start=f_ini, end=f_fin, interval='1m')
+            close = temp['Adj Close']
+            lista_df.append(close)
+        df = pd.DataFrame(lista_df)
+        benchmark_ret = np.log(df['Adj Close'] / df['Adj Close'].shift()).dropna()
+    
+    return benchmark_ret
 
 # -- ----------------------------------------------------------- FUNCION: Sesgos cognitivos -- #
 
