@@ -11,8 +11,8 @@ import oandapyV20.endpoints.instruments as instruments  # informacion de precios
 import pandas as pd  # manejo de datos
 from oandapyV20 import API  # conexion con broker OANDA
 from statistics import median
-import yfinance as yf
-from datetime import date
+from datos import token as OA_Ak  # Importar token para API de OANDA
+from datetime import datetime
 
 
 # -- --------------------------------------------------------- FUNCION: Descargar precios -- #
@@ -491,7 +491,7 @@ def f_estadisticas_mad(param_data, rf=0.08):
     return df_MAD
 
 
-def benchmark_data(param_data, benchmark='^GSPC'):
+def benchmark_data(param_data, benchmark='SPX500/USD'):
     """
 
     :param param_data: dataframe that includes open time and close time of operations
@@ -501,64 +501,18 @@ def benchmark_data(param_data, benchmark='^GSPC'):
     Debugging
     --------
     param_data = datos
+    benchmark='^GSPC'
     """
-    def f_datetime_range_fx(p0_start, p1_end, p2_inc, p3_delta):
-        """
-        Parameters
-        ----------
-        p0_start
-        p1_end
-        p2_inc
-        p3_delta
-        Returns
-        -------
-        ls_resultado
-        Debugging
-        ---------
-        """
 
-        ls_result = []
-        nxt = p0_start
-
-        while nxt <= p1_end:
-            ls_result.append(nxt)
-            if p3_delta == 'minutes':
-                nxt += timedelta(minutes=p2_inc)
-            elif p3_delta == 'hours':
-                nxt += timedelta(hours=p2_inc)
-            elif p3_delta == 'days':
-                nxt += timedelta(days=p2_inc)
-
-        return ls_result
-
-    start = param_data.loc[0, 'opentime']
-    start = date.strftime(start, '%Y-%m-%d')
-    end = param_data.loc[param_data.index[-1], 'closetime']
-    end = date.strftime(end, '%Y-%m-%d')
-
-    if end - start <= 7:
-        df = yf.download(tickers=benchmark, start=start, end=end, interval='1m')
-        benchmark_ret = np.log(df['Adj Close'] / df['Adj Close'].shift()).dropna()
-     else:
-        # hacer series de fechas e iteraciones para pedir todos los precios
-        fechas = f_datetime_range_fx(p0_start=start, p1_end=end, p2_inc=7, p3_delta='days')
-
-        # Lista para ir guardando los data frames
-        lista_df = list()
-
-        for fecha in range(0, len(fechas)-1):
-            # rango de fechas a uilizar
-            f_ini = fechas[fecha]
-            f_ini = date.strftime(f_ini, '%Y-%m-%d')
-            f_fin = fechas[fecha+1]
-            f_fin = date.strftime(f_fin, '%Y-%m-%d')
-            temp = yf.download(tickers=benchmark, start=f_ini, end=f_fin, interval='1m')
-            close = temp['Adj Close']
-            lista_df.append(close)
-        df = pd.DataFrame(lista_df)
-        benchmark_ret = np.log(df['Adj Close'] / df['Adj Close'].shift()).dropna()
+    fini = pd.to_datetime(param_data['opentime'].iloc[0]).tz_localize('GMT')
+    fini = datetime.strptime(fini.strftime('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S')
+    ffin = pd.to_datetime(param_data['closetime'].iloc[-1]).tz_localize('GMT')
+    ffin = datetime.strptime(ffin.strftime('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S')
+    granularity = "D"
+    df_benchmark = f_precios_masivos(p0_fini=fini, p1_ffin=ffin, p2_gran=granularity, p3_inst=benchmark,
+                                     p4_oatk=OA_Ak, p5_ginc=4900)
     
-    return benchmark_ret
+    return df_benchmark
 
 # -- ----------------------------------------------------------- FUNCION: Sesgos cognitivos -- #
 
