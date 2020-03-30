@@ -425,8 +425,18 @@ def f_estadisticas_ba(param_data):
 
 
 def f_estadisticas_mad(param_data, rf=0.08):
-    # medidas de atribucion al desempeño (MAD)
-    MAD = np.array(['sharpe',
+    """
+
+    :param param_data: Dataframe de informacion cuenta de trading
+    :param rf: tasa libre de risgo, base = 8%
+    :return: Data Frame de estadisticas financieras
+
+    Debugging
+    --------
+    param_data = datos
+    """
+    # medidas de atribucion al desempeño (mad)
+    mad = np.array(['sharpe',
                     'sortino_c',
                     'sortino_v',
                     'drawdown_capi_c',
@@ -435,7 +445,7 @@ def f_estadisticas_mad(param_data, rf=0.08):
                     'drawdown_pips_v',
                     'information_r'])
 
-    # descripciones de las MAD
+    # descripciones de las mad
     descripciones = np.array(['Sharpe Ratio',
                               'Sortino Ratio para Posiciones  de Compra',
                               'Sortino Ratio para Posiciones de Venta',
@@ -445,50 +455,61 @@ def f_estadisticas_mad(param_data, rf=0.08):
                               '	DrawUp de Pips',
                               'Informatio Ratio'])
 
-    # creacion de dataframe de MAD
-    df_MAD = pd.DataFrame(columns=['metrica', 'valor', 'descripcion'],
-                          index=np.array([i for i in range(0, len(MAD))]))
+    # creacion de dataframe de mad
+    df_mad = pd.DataFrame(columns=['metrica', 'valor', 'descripcion'],
+                          index=np.array([i for i in range(0, len(mad))]))
 
     # Llenar medidas
-    df_MAD['metrica'] = [MAD[i] for i in range(0, len(df_MAD.index))]
+    df_mad['metrica'] = [mad[i] for i in range(0, len(df_mad.index))]
 
     # Llenar descripciones
-    df_MAD['descripcion'] = [descripciones[i] for i in range(0, len(df_MAD.index))]
+    df_mad['descripcion'] = [descripciones[i] for i in range(0, len(df_mad.index))]
 
-    # calculo de las diferentes MAD
+    # calculo de las diferentes mad
 
     # sharp ratio
     returns = np.log(param_data.capital_acum / param_data.capital_acum.shift()).dropna()
     port_log_ret = np.sum(returns)
     port_std = returns.std()
-    df_MAD.valor[0] = (port_log_ret - rf) / port_std
+    df_mad.valor[0] = (port_log_ret - rf) / port_std
 
     # sortino_c
     port_std_neg = pd.DataFrame(np.array([ret for ret in returns if ret < 0])).std()
-    df_MAD.valor[1] = (port_log_ret - rf) / port_std_neg
+    df_mad.valor[1] = (port_log_ret - rf) / port_std_neg
 
     # sortino_v
     port_std_pos = pd.DataFrame(np.array([ret for ret in returns if ret > 0])).std()
-    df_MAD.valor[2] = (port_log_ret - rf) / port_std_pos
+    df_mad.valor[2] = (port_log_ret - rf) / port_std_pos
 
     # drawdown_capi_c
-    df_MAD.valor[3] = param_data.capital_acum.min()
+    df_mad.valor[3] = param_data.capital_acum.min()
 
     # drawdown_capi_v
-    df_MAD.valor[4] = param_data.capital_acum.max()
+    df_mad.valor[4] = param_data.capital_acum.max()
 
     # drawdown_pips_c
-    df_MAD.valor[5] = param_data.pips_acum.min()
+    df_mad.valor[5] = param_data.pips_acum.min()
 
     # drawdown_pips_v
-    df_MAD.valor[6] = param_data.pips_acum.max()
+    df_mad.valor[6] = param_data.pips_acum.max()
 
     # information_r
     benchmark_ret = benchmark_data(param_data=param_data)
     tracking_err = returns - benchmark_ret
-    df_MAD.valor[7] = (port_log_ret - np.sum(benchmark_ret)) / tracking_err.std()
+    df_mad.valor[7] = (port_log_ret - np.sum(benchmark_ret)) / tracking_err.std()
 
-    return df_MAD
+    return df_mad
+
+# -- ---------------------------------------------------- FUNCION: Calcular Ganancias o Perdidas diarias -- #
+def f_profit_diario(param_data):
+    start = datetime.strptime(param_data['opentime'][0], '%Y.%m.%d %H:%M:%S').strftime('%d/%m/%Y')
+    end = datetime.strptime(param_data['closetime'].iloc[-1], '%Y.%m.%d %H:%M:%S').strftime('%d/%m/%Y')
+    dates = pd.date_range(start=start, end=end, freq='D')
+    daily = pd.DataFrame(columns=['timestamp', 'profit_d', 'profit_acum_d'])
+    daily['timestamp'] = dates
+    x = param_data.groupby('closetime')['profit'].sum()
+
+
 
 
 def benchmark_data(param_data, benchmark='SPX500/USD'):
@@ -515,6 +536,8 @@ def benchmark_data(param_data, benchmark='SPX500/USD'):
     return df_benchmark
 
 # -- ----------------------------------------------------------- FUNCION: Sesgos cognitivos -- #
+
+
 
 
 def f_sesgos_cognitivo(param_data):

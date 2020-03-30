@@ -18,4 +18,3 @@ datos = fn.f_columnas_pips(param_data=datos)
 estadisticos_ba = fn.f_estadisticas_ba(param_data=datos)
 
 estadisticos_mad = fn.f_estadisticas_mad(param_data=datos)
-
