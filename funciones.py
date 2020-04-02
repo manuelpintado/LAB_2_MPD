@@ -495,22 +495,28 @@ def f_estadisticas_mad(param_data, rf=0.08):
 
     # information_r
     benchmark_ret = benchmark_data(param_data=param_data)
-    tracking_err = returns - benchmark_ret
+    tracking_err = returns - benchmark_ret['ret']
     df_mad.valor[7] = (port_log_ret - np.sum(benchmark_ret)) / tracking_err.std()
 
     return df_mad
 
+
 # -- ---------------------------------------------------- FUNCION: Calcular Ganancias o Perdidas diarias -- #
 def f_profit_diario(param_data):
-    start = datetime.strptime(param_data['opentime'][0], '%Y.%m.%d %H:%M:%S').strftime('%d/%m/%Y')
-    end = datetime.strptime(param_data['closetime'].iloc[-1], '%Y.%m.%d %H:%M:%S').strftime('%d/%m/%Y')
+    start = datetime.strptime(param_data['opentime'][0], '%Y.%m.%d %H:%M:%S')
+    end = datetime.strptime(param_data['closetime'].iloc[-1], '%Y.%m.%d %H:%M:%S')
     dates = pd.date_range(start=start, end=end, freq='D')
     daily = pd.DataFrame(columns=['timestamp', 'profit_d', 'profit_acum_d'])
-    daily['timestamp'] = dates
-    x = param_data.groupby('closetime')['profit'].sum()
+    daily['timestamp'] = dates.strftime('%d/%m/%Y')
+    times = [datetime.strptime(x, '%Y.%m.%d %H:%M:%S').strftime('%d/%m/%Y') for x in param_data['closetime']]
+    temp = param_data[['profit']]
+    temp['closetime'] = pd.to_datetime(times)
+    temp = temp.groupby('closetime').sum()
+    temp['closetime'] = [temp['closetime'].iloc[x].strftime('%d/%m/%Y')
+                         for x in range(0, len(temp['closetime']))]
+    daily.merge(temp, left_on='timestamp', right_index=True, how='outer')
 
-
-
+    return daily
 
 def benchmark_data(param_data, benchmark='SPX500/USD'):
     """
@@ -532,12 +538,13 @@ def benchmark_data(param_data, benchmark='SPX500/USD'):
     granularity = "D"
     df_benchmark = f_precios_masivos(p0_fini=fini, p1_ffin=ffin, p2_gran=granularity, p3_inst=benchmark,
                                      p4_oatk=OA_Ak, p5_ginc=4900)
-    
+
+    df_benchmark['ret'] = np.log(df_benchmark.Close / df_benchmark.Close.shift()).dropna()
+
     return df_benchmark
 
+
 # -- ----------------------------------------------------------- FUNCION: Sesgos cognitivos -- #
-
-
 
 
 def f_sesgos_cognitivo(param_data):
