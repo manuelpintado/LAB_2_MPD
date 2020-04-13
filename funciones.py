@@ -11,8 +11,9 @@ import oandapyV20.endpoints.instruments as instruments  # informacion de precios
 import pandas as pd  # manejo de datos
 from oandapyV20 import API  # conexion con broker OANDA
 from statistics import median
-from datos import token as OA_Ak  # Importar token para API de OANDA
+from datos import token as oa_ak  # Importar token para API de OANDA
 from datetime import datetime
+import visualizaciones as vs  # archivo de visualizaciones para graficar
 
 
 # -- --------------------------------------------------------- FUNCION: Descargar precios -- #
@@ -171,7 +172,7 @@ def f_precios_masivos(p0_fini, p1_ffin, p2_gran, p3_inst, p4_oatk, p5_ginc):
 
 # -- --------------------------------------------------------- FUNCION: Leer archivo excel -- #
 
-def f_leer_archivo(param_archivo, sheet_name='Sheet 1'):
+def f_leer_archivo(param_archivo, sheet_name='Sheet1'):
     """
     Funcion para leer archivo en formato xlsx.
 
@@ -307,10 +308,7 @@ def f_columnas_pips(param_data, init_invest=5000):
     param_data['profit_acum'] = param_data['profit'].cumsum()
 
     # calcular el capital acumulado por operacion
-    param_data['capital_acum'] = 0
-    param_data['capital_acum'][0] = init_invest + param_data['profit'][0]
-    for i in range(1, len(param_data.index)):
-        param_data['capital_acum'][i] = param_data['capital_acum'][i - 1] + param_data['profit'][i]
+    param_data['capital_acum'] = [init_invest + param_data['profit_acum'][i] for i in param_data.index]
 
     return param_data
 
@@ -318,10 +316,11 @@ def f_columnas_pips(param_data, init_invest=5000):
 # -- -------------------------------------------------------- FUNCION: Estadisticas basicas -- #
 
 
-def f_estadisticas_ba(param_data):
+def f_estadisticas_ba(param_data, ver_grafica=False):
     """
 
     :param param_data: Dataframe conteniendo las operaciones realizadas en la cuenta
+    :param ver_grafica: booleano para mostrar grafica de pastel del ranking
     :return: Diccionario conteniendo 2 dataframes:
                 1. Concentrado de las estadisticas basicas de la cuenta
                 2. ranking de los activos utilizados (% de ganadas/perdidas por cada activo utilizado)
@@ -329,6 +328,7 @@ def f_estadisticas_ba(param_data):
     Debugging
     --------
     param_data = datos
+
     """
 
     # lista de medidas
@@ -397,11 +397,11 @@ def f_estadisticas_ba(param_data):
     symbols = np.unique(param_data.symbol)
 
     # creating ranking dataframe
-    df_1_ranking = pd.DataFrame(columns=['symbol', 'rank'],
+    df_2_ranking = pd.DataFrame(columns=['symbol', 'rank'],
                                 index=np.array([i for i in range(0, len(symbols))]))
 
     # fill symbols
-    df_1_ranking['symbol'] = [symbols[i] for i in range(0, len(symbols))]
+    df_2_ranking['symbol'] = [symbols[i] for i in range(0, len(symbols))]
 
     # ranking
     i = 0
@@ -410,39 +410,67 @@ def f_estadisticas_ba(param_data):
                       if param_data.loc[i, 'profit'] >= 0 and param_data.loc[i, 'symbol'] == symbol)
         totales = sum(1 for i in param_data.index if param_data.loc[i, 'symbol'] == symbol)
 
-        df_1_ranking.loc[i, 'rank'] = str(np.round(ganadas / totales, 2)) + '%'
+        df_2_ranking.loc[i, 'rank'] = str(np.round(ganadas / totales * 100, 2)) + '%'
         i += 1
 
     # create the dictionary
 
-    final_dict = {'df_1_tabla': df_1_tabla,
-                  'df_1_ranking': df_1_ranking}
+    final_dict = {'df_1_tabla': df_1_tabla, 'df_2_ranking': df_2_ranking}
+
+    if ver_grafica:
+        vs.g_pastel(p0_dict=final_dict)
 
     return final_dict
+
+
+# -- ---------------------------------------------------- FUNCION: Calcular Ganancias o Perdidas diarias -- #
+
+
+def f_profit_diario(param_data, init_invest=5000):
+    """
+
+    :param param_data: Dataframe con columna opentime
+    :param init_invest: inversion inicial del portafolio
+    :return: DataFrame diario
+
+    Debugging
+    --------
+    param_data = datos
+
+    """
+    daily = param_data[['closetime', 'profit']]
+    daily.rename(columns={'closetime': 'timestamp', 'profit': 'profit_d'}, inplace=True)
+    daily.index = daily.timestamp
+    daily = daily.resample("d").sum().reset_index()
+    # calcular la ganancia o perdida acumulada de la cuenta
+    daily['profit_acm_d'] = daily['profit_d'].cumsum() + init_invest
+
+    return daily
 
 
 # -- ---------------------------------------------------- FUNCION: Estadisticas financieras -- #
 
 
-def f_estadisticas_mad(param_data, rf=0.08):
+def f_estadisticas_mad(param_data, rf=0.08 / 300, mar=.3 / 300, ver_grafica=False):
     """
 
     :param param_data: Dataframe de informacion cuenta de trading
     :param rf: tasa libre de risgo, base = 8%
+    :param mar: base 30%
+    :param ver_grafica: Booleano para ver grafica de lina de capital acumulado con DrawDown y DrawUp
     :return: Data Frame de estadisticas financieras
 
     Debugging
     --------
     param_data = datos
     """
+
     # medidas de atribucion al desempeño (mad)
     mad = np.array(['sharpe',
                     'sortino_c',
                     'sortino_v',
-                    'drawdown_capi_c',
-                    'drawdown_capi_v',
-                    'drawdown_pips_c',
-                    'drawdown_pips_v',
+                    'drawdown_capi',
+                    'drawup_capi',
                     'information_r'])
 
     # descripciones de las mad
@@ -451,8 +479,6 @@ def f_estadisticas_mad(param_data, rf=0.08):
                               'Sortino Ratio para Posiciones de Venta',
                               'DrawDown de Capital',
                               'DrawUp de Capital',
-                              '	DrawDown de Pips',
-                              '	DrawUp de Pips',
                               'Informatio Ratio'])
 
     # creacion de dataframe de mad
@@ -465,60 +491,113 @@ def f_estadisticas_mad(param_data, rf=0.08):
     # Llenar descripciones
     df_mad['descripcion'] = [descripciones[i] for i in range(0, len(df_mad.index))]
 
+    # Data Frame de datos diarios
+    daily = f_profit_diario(param_data)
+    daily_buy = f_profit_diario(param_data[param_data.type == 'buy'])
+    daily_sell = f_profit_diario(param_data[param_data.type == 'sell'])
+
     # calculo de las diferentes mad
 
     # sharp ratio
-    returns = np.log(param_data.capital_acum / param_data.capital_acum.shift()).dropna()
+    returns = np.log(daily.profit_acm_d / daily.profit_acm_d.shift()).dropna()
     port_log_ret = np.sum(returns)
     port_std = returns.std()
     df_mad.valor[0] = (port_log_ret - rf) / port_std
 
     # sortino_c
-    port_std_neg = pd.DataFrame(np.array([ret for ret in returns if ret < 0])).std()
-    df_mad.valor[1] = (port_log_ret - rf) / port_std_neg
+    returns_buy = np.log(daily_buy.profit_acm_d / daily_buy.profit_acm_d.shift()).dropna()
+    port_std_buy = np.std(np.array([ret for ret in returns_buy if ret < mar]))
+    df_mad.valor[1] = (np.sum(returns_buy) - mar) / port_std_buy
 
     # sortino_v
-    port_std_pos = pd.DataFrame(np.array([ret for ret in returns if ret > 0])).std()
-    df_mad.valor[2] = (port_log_ret - rf) / port_std_pos
+    returns_sell = np.log(daily_sell.profit_acm_d / daily_sell.profit_acm_d.shift()).dropna()
+    port_std_sell = np.std(np.array([ret for ret in returns_sell if ret < mar]))
+    df_mad.valor[2] = (np.sum(returns_sell) - mar) / port_std_sell
 
-    # drawdown_capi_c
-    df_mad.valor[3] = param_data.capital_acum.min()
+    # drawdown_capi
+    df_mad.valor[3] = draw_down(daily)
 
-    # drawdown_capi_v
-    df_mad.valor[4] = param_data.capital_acum.max()
-
-    # drawdown_pips_c
-    df_mad.valor[5] = param_data.pips_acum.min()
-
-    # drawdown_pips_v
-    df_mad.valor[6] = param_data.pips_acum.max()
+    # drawup_capi
+    df_mad.valor[4] = draw_up(daily)
 
     # information_r
     benchmark_ret = benchmark_data(param_data=param_data)
     tracking_err = returns - benchmark_ret['ret']
-    df_mad.valor[7] = (port_log_ret - np.sum(benchmark_ret)) / tracking_err.std()
+    df_mad.valor[5] = (port_log_ret - np.sum(benchmark_ret['ret'])) / tracking_err.std()
+
+    # Grafica de linea con Draw Down y Draw Up
+    if ver_grafica:
+        vs.g_dd_du(df_data=daily, df_estadisticos=df_mad)
 
     return df_mad
 
 
-# -- ---------------------------------------------------- FUNCION: Calcular Ganancias o Perdidas diarias -- #
-def f_profit_diario(param_data):
-    start = datetime.strptime(param_data['opentime'][0], '%Y.%m.%d %H:%M:%S')
-    end = datetime.strptime(param_data['closetime'].iloc[-1], '%Y.%m.%d %H:%M:%S')
-    dates = pd.date_range(start=start, end=end, freq='D')
-    daily = pd.DataFrame(columns=['timestamp', 'profit_d', 'profit_acum_d'])
-    daily['timestamp'] = dates.strftime('%d/%m/%Y')
-    times = [datetime.strptime(x, '%Y.%m.%d %H:%M:%S').strftime('%d/%m/%Y') for x in param_data['closetime']]
-    temp = param_data[['profit']]
-    temp['closetime'] = pd.to_datetime(times)
-    temp = temp.groupby('closetime').sum()
-    temp['closetime'] = [temp['closetime'].iloc[x].strftime('%d/%m/%Y')
-                         for x in range(0, len(temp['closetime']))]
-    daily.merge(temp, left_on='timestamp', right_index=True, how='outer')
+# -- ---------------------------------------------------- FUNCION: Draw Down -- #
 
-    return daily
+def draw_down(param_data):
+    """
 
-def benchmark_data(param_data, benchmark='SPX500/USD'):
+    :param param_data: DataFrame
+    :return: string con fecha de incio, fecha de fin y monto
+
+    Debugging
+    --------
+    param_data = datos_diarios
+
+    """
+    mdd = 0
+    peak = param_data.profit_acm_d[0]
+    start = param_data.timestamp[0]
+    end = param_data.timestamp[0]
+    for i in param_data.index:
+        if param_data.profit_acm_d[i] > peak and end <= start:
+            peak = param_data.profit_acm_d[i]
+            start = param_data.timestamp[i]
+        dd = peak - (param_data.profit_acm_d[i])
+        if dd > mdd:
+            mdd = dd
+            end = param_data.timestamp[i]
+
+    if mdd < 1:
+        start = param_data.timestamp[0]
+        end = param_data.timestamp[0]
+    return '"' + str(start) + '" "' + str(end) + '" $' + str(mdd)
+
+
+# -- ---------------------------------------------------- FUNCION: Draw Up -- #
+
+def draw_up(param_data):
+    """
+
+    :param param_data: DataFrame
+    :return: string con fecha de incio, fecha de fin y monto
+
+    Debugging
+    --------
+    param_data = datos_diarios
+
+    """
+    mdu = 0
+    lowest = param_data.profit_acm_d[0]
+    start = param_data.timestamp[0]
+    end = param_data.timestamp[0]
+    for i in param_data.index:
+        if param_data.profit_acm_d[i] < lowest:
+            lowest = param_data.profit_acm_d[i]
+            start = param_data.timestamp[i]
+        du = param_data.profit_acm_d[i] - lowest
+        if du > mdu:
+            mdu = du
+            end = param_data.timestamp[i]
+    if mdu < 1:
+        start = param_data.timestamp[0]
+        end = param_data.timestamp[0]
+    return '"' + str(start) + '" "' + str(end) + '" $' + str(mdu)
+
+
+# -- ---------------------------------------------------- FUNCION: Informacion Benchmark -- #
+
+def benchmark_data(param_data, benchmark='SPX500_USD'):
     """
 
     :param param_data: dataframe that includes open time and close time of operations
@@ -537,7 +616,7 @@ def benchmark_data(param_data, benchmark='SPX500/USD'):
     ffin = datetime.strptime(ffin.strftime('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S')
     granularity = "D"
     df_benchmark = f_precios_masivos(p0_fini=fini, p1_ffin=ffin, p2_gran=granularity, p3_inst=benchmark,
-                                     p4_oatk=OA_Ak, p5_ginc=4900)
+                                     p4_oatk=oa_ak, p5_ginc=4900)
 
     df_benchmark['ret'] = np.log(df_benchmark.Close / df_benchmark.Close.shift()).dropna()
 
@@ -547,5 +626,113 @@ def benchmark_data(param_data, benchmark='SPX500/USD'):
 # -- ----------------------------------------------------------- FUNCION: Sesgos cognitivos -- #
 
 
-def f_sesgos_cognitivo(param_data):
-    pass
+def f_be_de(param_data, ver_grafica=False):
+    """
+
+    :param param_data: Data Frame con datos de la cuenta
+    :param ver_grafica: booleano para visualizar grafica
+    :return: diccionario con las ocurrencias de los sesgos cognitivos y estadisticos
+
+    Debugging
+    --------
+    param_data = datos
+
+    """
+    # Sacar ganadora o perdedora
+    param_data['status'] = ['win' if param_data.profit[i] >= 0 else 'lose'
+                            for i in param_data.index]
+
+    # ratios
+    # Ratio operaciones ganadoras
+    param_data["ratio_win"] = [param_data.profit[i] / param_data.capital_acum[i] * 100 if param_data.status[i] == 'win'
+                               else 0 for i in param_data.index]
+    # Ratio operaciones perdedoras
+    param_data["ratio_lose"] = [
+        param_data.profit[i] / param_data.capital_acum[i] * 100 if param_data.status[i] == 'lose'
+        else 0
+        for i in param_data.index]
+
+    # crear df de operaciones ganadas y de perdidas
+    winners = param_data[param_data.status == "win"]
+    losers = param_data[param_data.status == "lose"]
+
+    # inicializar variables para diccionario
+    cantidad = 0
+    status = 0
+    aversion = 0
+    sensibilidad_decreciente = 0
+
+    # DataFrame de informacion final
+    resultados = pd.DataFrame(columns=['ocurrencias', 'status_quo', 'aversion_perdida', 'sensibilidad_decreciente'],
+                              index=[0])
+
+    # Crear outline del diccionario
+    diccionario = {
+        'ocurrencias': {
+            'cantidad': cantidad
+        },
+        'resultados': resultados
+    }
+
+    # Encontrar sesgos
+    for i in winners.index:
+        winner = winners.loc[i]
+        for j in losers.index:
+            loser = losers.loc[j]
+            if loser.opentime < winner.closetime < loser.closetime:
+                cantidad += 1
+                time = winner.closetime  # cierre operacion ganadora que tiene el sesgo
+                nombre = 'ocurrencia_' + str(cantidad)
+                diccionario['ocurrencias'][nombre] = {
+                    'timestamp': time,
+                    'operaciones': {
+                        'ganadora': {
+                            'instrumento': winner.symbol,
+                            'volumen': winner.size,
+                            'sentido': winner.type,
+                            'capital_ganadora': winner.profit
+                        },
+                        'perdedora': {
+                            'instrumento': loser.symbol,
+                            'volumen': loser.size,
+                            'sentido': loser.type,
+                            'capital_ganadora': loser.profit
+                        }
+                    },
+                    'ratio_cp_capital_acm': loser.ratio_lose,
+                    'ratio_cg_capital_acm': winner.ratio_win,
+                    'ratio_cp_cg': loser.profit / winner.profit
+                }
+                if winner.profit / winner.capital_acum > np.abs(loser.profit / loser.capital_acum):
+                    status += 1
+                if np.abs(loser.profit / winner.profit) > 1.5:
+                    aversion += 1
+                try:
+                    if winners.capital_acum[i - 1] < winners.capital_acum[i] and \
+                            (winners.profit[i - 1] < winners.profit[i] or losers.profit[i - 1] < losers.profiti) and \
+                            np.abs(loser.profit) / winner.profit > 1.5:
+                        sensibilidad_decreciente += 1
+                except IndexError:
+                    sensibilidad_decreciente = sensibilidad_decreciente
+
+    diccionario['ocurrencias']['cantidad'] = cantidad
+    diccionario['resultados']['ocurrencias'][0] = cantidad
+    try:
+        diccionario['resultados']['status_quo'][0] = status / cantidad * 100
+        diccionario['resultados']['aversion_perdida'][0] = aversion / cantidad * 100
+    except ZeroDivisionError:
+        diccionario['resultados']['status_quo'][0] = 0
+        diccionario['resultados']['aversion_perdida'][0] = 0
+    diccionario['resultados']['sensibilidad_decreciente'][0] = 'si'
+
+    if winners.capital_acum.iloc[0] > winners.capital_acum.iloc[-1]:
+        diccionario['resultados']['sensibilidad_decreciente'][0] = 'no'
+    if winners.profit.iloc[0] > winners.profit.iloc[-1] and losers.profit.iloc[0] < losers.profit.iloc[-1]:
+        diccionario['resultados']['sensibilidad_decreciente'][0] = 'no'
+    if np.abs(losers.profit.min()) / winners.profit.max() < 1.5:
+        diccionario['resultados']['sensibilidad_decreciente'][0] = 'no'
+
+    if ver_grafica:
+        vs.g_disposition(status_quo=status, aversion=aversion, sensibilidad_decreciente=sensibilidad_decreciente)
+
+    return diccionario
